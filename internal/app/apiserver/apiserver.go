@@ -1,9 +1,10 @@
 package apiserver
 
 import (
+	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"io"
+	"http-rest-api/internal/libs/calculator"
 	"net/http"
 )
 
@@ -47,11 +48,18 @@ func (s *APIServer) configureLogger() error {
 }
 
 func (s *APIServer) configureRouter() {
-	s.router.HandleFunc("/hello", s.handleHello())
+	s.router.HandleFunc("/{id}", s.handleRequest())
 }
 
-func (s *APIServer) handleHello() http.HandlerFunc {
+func (s *APIServer) handleRequest() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		io.WriteString(w, "Hello")
+		w.Header().Set("Content-Type", "application/json")
+		input := mux.Vars(r)
+		output, _, err := calculator.GetAmicableNumber(input["id"])
+		if err != nil {
+			output = "Error in handleRequest function"
+		}
+		json.NewEncoder(w).Encode(output)
+		s.logger.Info("Got number " + input["id"] + ". Sent response " + output)
 	}
 }
