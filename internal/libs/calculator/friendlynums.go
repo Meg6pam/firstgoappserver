@@ -2,9 +2,11 @@ package calculator
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"math"
 	"strconv"
+	"time"
 )
 
 func sumOfDividers(number int) int {
@@ -20,10 +22,18 @@ func sumOfDividers(number int) int {
 }
 
 func GetAmicableNumber(input string) (string, bool, error) {
+	t0 := time.Now()
+	t1 := time.Now()
 	inputAsNumber, err := strconv.Atoi(input)
 	switch {
+	case inputAsNumber == -1:
+		{
+			t0 = time.Now()
+			fmt.Printf("Elapsed time: %v", t1.Sub(t0))
+			t1 = time.Now()
+		}
 	case err != nil:
-		log.Fatal(err)
+		inputAsNumber = -2
 	case inputAsNumber <= 0:
 		log.Fatal(errors.New("number should be greater than 0"))
 	case inputAsNumber > math.MaxInt32:

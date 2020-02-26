@@ -38,7 +38,6 @@ func (s *APIServer) Start() error {
 
 func (s *APIServer) configureLogger() error {
 	level, err := logrus.ParseLevel(s.serverconfig.LogLevel)
-
 	if err != nil {
 		return err
 	}
