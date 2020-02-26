@@ -2,7 +2,6 @@ package calculator
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"math"
 	"strconv"
@@ -34,11 +33,4 @@ func GetAmicableNumber(input string) (string, bool, error) {
 	possibleFriendlyNumber := sumOfDividers(int(inputAsNumber))
 
 	return strconv.FormatInt(int64(possibleFriendlyNumber), 10), sumOfDividers(possibleFriendlyNumber) == inputAsNumber, nil
-}
-
-func main() {
-	input := "220"
-	possibleFriendlyNumber, isAmicable, err := GetAmicableNumber(input)
-
-	fmt.Println(input, possibleFriendlyNumber, isAmicable, err)
 }
