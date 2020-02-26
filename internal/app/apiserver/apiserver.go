@@ -60,5 +60,6 @@ func (s *APIServer) handleRequest() http.HandlerFunc {
 			output = "Error in handleRequest function"
 		}
 		json.NewEncoder(w).Encode(output)
+		s.logger.Info("Got number " + input["id"] + ". Sent response " + output)
 	}
 }
