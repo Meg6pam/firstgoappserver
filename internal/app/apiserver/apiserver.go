@@ -2,7 +2,7 @@ package apiserver
 
 import (
 	"encoding/json"
-	"github.com/gorilla/mux"
+	"github.com/go-zoo/bone"
 	"github.com/sirupsen/logrus"
 	"http-rest-api/internal/libs/calculator"
 	"net/http"
@@ -11,14 +11,14 @@ import (
 type APIServer struct {
 	serverconfig *Config
 	logger       *logrus.Logger
-	router       *mux.Router
+	router       *bone.Mux
 }
 
 func New(config *Config) *APIServer {
 	return &APIServer{
 		serverconfig: config,
 		logger:       logrus.New(),
-		router:       mux.NewRouter(),
+		router:       bone.New(),
 	}
 }
 
@@ -47,13 +47,13 @@ func (s *APIServer) configureLogger() error {
 }
 
 func (s *APIServer) configureRouter() {
-	s.router.HandleFunc("/{id}", s.handleRequest())
+	s.router.Get("/#id^[0-9]$", s.handleRequest())
 }
 
 func (s *APIServer) handleRequest() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		input := mux.Vars(r)
+		input := bone.GetAllValues(r)
 		output, _, err := calculator.GetAmicableNumberv2(input["id"])
 		if err != nil {
 			output = "Error in handleRequest function"
