@@ -38,7 +38,6 @@ func (s *APIServer) Start() error {
 
 func (s *APIServer) configureLogger() error {
 	level, err := logrus.ParseLevel(s.serverconfig.LogLevel)
-
 	if err != nil {
 		return err
 	}
@@ -55,11 +54,11 @@ func (s *APIServer) handleRequest() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		input := mux.Vars(r)
-		output, _, err := calculator.GetAmicableNumber(input["id"])
+		output, _, err := calculator.GetAmicableNumberv2(input["id"])
 		if err != nil {
 			output = "Error in handleRequest function"
 		}
 		json.NewEncoder(w).Encode(output)
-		s.logger.Info("Got number " + input["id"] + ". Sent response " + output)
+		//	s.logger.Info("Got number " + input["id"] + ". Sent response " + output)
 	}
 }

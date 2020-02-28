@@ -5,6 +5,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"http-rest-api/internal/app/apiserver"
 	"log"
+	"runtime"
 )
 
 var (
@@ -16,6 +17,7 @@ func init() {
 }
 
 func main() {
+	runtime.GOMAXPROCS(70)
 	flag.Parse()
 	config := apiserver.NewConfig()
 	_, err := toml.DecodeFile(configPath, config)
