@@ -1,24 +1,32 @@
 package apiserver
 
 import (
-	"encoding/json"
-	"github.com/go-zoo/bone"
+	"github.com/fasthttp/router"
 	"github.com/sirupsen/logrus"
+	"github.com/valyala/fasthttp"
 	"http-rest-api/internal/libs/calculator"
-	"net/http"
+)
+
+var (
+	requestChan chan *fasthttp.RequestCtx
+	donechan    chan string
 )
 
 type APIServer struct {
 	serverconfig *Config
 	logger       *logrus.Logger
-	router       *bone.Mux
+	router       *router.Router
 }
 
 func New(config *Config) *APIServer {
+	/*	for i := 0; i < 16; i++ { // threads
+		go newWorker()
+	}*/
+	go newWorker()
 	return &APIServer{
 		serverconfig: config,
 		logger:       logrus.New(),
-		router:       bone.New(),
+		router:       router.New(),
 	}
 }
 
@@ -33,7 +41,7 @@ func (s *APIServer) Start() error {
 
 	s.logger.Info("starting API server...")
 
-	return http.ListenAndServe(s.serverconfig.BinAddr, s.router)
+	return fasthttp.ListenAndServe(s.serverconfig.BinAddr, s.router.Handler)
 }
 
 func (s *APIServer) configureLogger() error {
@@ -47,18 +55,31 @@ func (s *APIServer) configureLogger() error {
 }
 
 func (s *APIServer) configureRouter() {
-	s.router.Get("/#id^[0-9]$", s.handleRequest())
+	requestChan = make(chan *fasthttp.RequestCtx, 1000000)
+	s.router.GET("/:id", saveRequest)
 }
 
-func (s *APIServer) handleRequest() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		input := bone.GetAllValues(r)
-		output, _, err := calculator.GetAmicableNumberv2(input["id"])
-		if err != nil {
-			output = "Error in handleRequest function"
+func saveRequest(ctx *fasthttp.RequestCtx) {
+	go func() { requestChan <- ctx }()
+}
+
+func handleRequest(ctx *fasthttp.RequestCtx) {
+	input := ctx.UserValue("id").(string)
+	output, _, err := calculator.GetAmicableNumberv2(input)
+	if err != nil {
+		output = "Error in handleRequest function"
+	}
+	ctx.WriteString(output)
+	//	s.logger.Info("Got number " + input["id"] + ". Sent response " + output)
+}
+
+func newWorker() {
+	for true {
+		select {
+		case ctx := <-requestChan:
+			{
+				handleRequest(ctx)
+			}
 		}
-		json.NewEncoder(w).Encode(output)
-		//	s.logger.Info("Got number " + input["id"] + ". Sent response " + output)
 	}
 }
